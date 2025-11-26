@@ -2,8 +2,48 @@ import "./App.css";
 import Header from "./components/Header";
 import Section from "./components/Section";
 import Card from "./components/Card";
+import { useState } from "react";
 
 function App() {
+  const [form, setForm] = useState({ nombre: "", correo: "", descripcion: "" });
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState(null);
+  const [errors, setErrors] = useState([]);
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setForm((f) => ({ ...f, [name]: value }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setMessage(null);
+    setErrors([]);
+    setLoading(true);
+    try {
+      const res = await fetch("/api/solicitudes", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        if (res.status === 400 && Array.isArray(data.errors)) {
+          setErrors(data.errors);
+        } else {
+          setMessage("Error al enviar la solicitud.");
+        }
+      } else {
+        setMessage("Solicitud enviada correctamente.");
+        setForm({ nombre: "", correo: "", descripcion: "" });
+      }
+    } catch {
+      setMessage("No se pudo conectar con el servidor.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <>
       <Header avatar="/images/Davinson.png" />
@@ -130,13 +170,72 @@ function App() {
                 target="_blank"
                 rel="noreferrer"
               >
-                <img src="/images/linkedin.png" alt="LinkedIn" />
+                <img src="/images/lindekin.png" alt="LinkedIn" />
               </a>
 
               <a href="https://github.com/Elrojizo17" target="_blank" rel="noreferrer">
                 <img src="/images/github.png" alt="GitHub" />
               </a>
             </div>
+          </Card>
+        </Section>
+
+        {/* Solicitud de servicio */}
+        <Section id="Solicitud" title="Solicitud de servicio">
+          <Card>
+            <form onSubmit={handleSubmit} className="form">
+              <div className="form__group">
+                <label htmlFor="nombre">Nombre</label>
+                <input
+                  id="nombre"
+                  name="nombre"
+                  type="text"
+                  value={form.nombre}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
+
+              <div className="form__group">
+                <label htmlFor="correo">Correo</label>
+                <input
+                  id="correo"
+                  name="correo"
+                  type="email"
+                  value={form.correo}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
+
+              <div className="form__group">
+                <label htmlFor="descripcion">Descripción</label>
+                <textarea
+                  id="descripcion"
+                  name="descripcion"
+                  rows="4"
+                  value={form.descripcion}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
+
+              <button type="submit" disabled={loading}>
+                {loading ? "Enviando..." : "Enviar solicitud"}
+              </button>
+
+              {message && <p className="form__message">{message}</p>}
+
+              {errors.length > 0 && (
+                <ul className="form__errors">
+                  {errors.map((err, idx) => (
+                    <li key={idx}>
+                      {(err.path || err.param) ?? "campo"}: {err.msg || "inválido"}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </form>
           </Card>
         </Section>
       </main>
