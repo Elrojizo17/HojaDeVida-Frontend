@@ -4,6 +4,10 @@ import Section from "./components/Section";
 import Card from "./components/Card";
 import { useState } from "react";
 
+const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL ||
+  "https://hojadevida-backend.onrender.com";
+
 function App() {
   const [form, setForm] = useState({ nombre: "", correo: "", descripcion: "" });
   const [loading, setLoading] = useState(false);
@@ -17,32 +21,38 @@ function App() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (loading) return; // evita doble envío
     setMessage(null);
     setErrors([]);
     setLoading(true);
     try {
-      const res = await fetch("https://hojadevida-backend.onrender.com/api/solicitudes", {
+      const res = await fetch(`${API_BASE_URL}/api/solicitudes`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        mode: "cors",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
         body: JSON.stringify(form),
       });
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
       if (!res.ok) {
         if (res.status === 400 && Array.isArray(data.errors)) {
           setErrors(data.errors);
+          setMessage("Revisa los campos del formulario.");
         } else {
-          setMessage("Error al enviar la solicitud.");
+          setMessage(data?.error || "Error al enviar la solicitud.");
         }
       } else {
         setMessage("Solicitud enviada correctamente.");
         setForm({ nombre: "", correo: "", descripcion: "" });
       }
-    } catch {
+    } catch (err) {
       setMessage("No se pudo conectar con el servidor.");
     } finally {
       setLoading(false);
     }
-  };
+  }
 
   return (
     <>
