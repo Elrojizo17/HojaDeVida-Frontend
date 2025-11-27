@@ -1,29 +1,29 @@
 import "../App.css";
+import { useEffect, useState } from "react";
 
-function Header({ avatar }) {
+export default function Header({ avatar }) {
+    const [theme, setTheme] = useState(
+        localStorage.getItem("theme") === "light" ? "light" : "dark"
+    );
+
+    useEffect(() => {
+        document.documentElement.dataset.theme = theme;
+        localStorage.setItem("theme", theme);
+    }, [theme]);
+
     return (
         <header className="site-header">
         <div className="left">
-            <img src={avatar} alt="Foto de perfil" className="avatar" />
-            <h1>David Alejandro Escobar García</h1>
+            <img className="avatar" src={avatar} alt="Perfil" />
+            <h1>Hoja de Vida</h1>
         </div>
-
-        <div className="right">
-            <div className="dropdown">
-            <div className="dropdown-selected">Menú</div>
-
-            <ul className="dropdown-list">
-                <li><a href="#Perfil">Perfil</a></li>
-                <li><a href="#Idiomas">Idiomas</a></li>
-                <li><a href="#Herramientas">Herramientas</a></li>
-                <li><a href="#Experiencia">Experiencia</a></li>
-                <li><a href="#Estudios">Estudios</a></li>
-                <li><a href="#Contacto">Contacto</a></li>
-            </ul>
-            </div>
-        </div>
+        <button
+            className="theme-toggle"
+            onClick={() => setTheme((t) => (t === "dark" ? "light" : "dark"))}
+            aria-label="Cambiar tema"
+        >
+            {theme === "dark" ? "☀️ Claro" : "🌙 Oscuro"}
+        </button>
         </header>
     );
 }
-
-export default Header;

@@ -3,70 +3,103 @@ import Header from "./components/Header";
 import Section from "./components/Section";
 import Card from "./components/Card";
 import { useState } from "react";
+import { motion } from "framer-motion";
+import Toast from "./components/Toast";
+import BackToTop from "./components/BackToTop";
 
 const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL ||
   "https://hojadevida-backend.onrender.com";
-
 const SOLICITUDES_ENDPOINT = `${API_BASE_URL}/solicitudes`;
 
 function App() {
   const [form, setForm] = useState({ nombre: "", correo: "", descripcion: "" });
+  const [fieldErrors, setFieldErrors] = useState({});
   const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState(null);
-  const [errors, setErrors] = useState([]);
+  const [toast, setToast] = useState({ type: null, message: null });
+
+  const setToastMsg = (type, message) => setToast({ type, message });
+
+  const validators = {
+    nombre: v => v.trim().length >= 3 || "Mínimo 3 caracteres",
+    correo: v => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v) || "Correo inválido",
+    descripcion: v => v.trim().length >= 10 || "Mínimo 10 caracteres"
+  };
+
+  const validateField = (name, value) => {
+    const rule = validators[name];
+    if (!rule) return;
+    const ok = rule(value);
+    setFieldErrors(fe => ({ ...fe, [name]: ok === true ? null : ok }));
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setForm((f) => ({ ...f, [name]: value }));
+    setForm(f => ({ ...f, [name]: value }));
+    validateField(name, value);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (loading) return;
-    setMessage(null);
-    setErrors([]);
+    // Validación final
+    Object.entries(form).forEach(([k, v]) => validateField(k, v));
+    if (Object.values(fieldErrors).some(err => err)) {
+      setToastMsg("error", "Corrige los campos.");
+      return;
+    }
     setLoading(true);
-
     try {
       const res = await fetch(SOLICITUDES_ENDPOINT, {
         method: "POST",
         headers: { "Content-Type": "application/json", Accept: "application/json" },
         body: JSON.stringify(form),
       });
-
       const data = await res.json().catch(() => ({}));
-
       if (!res.ok) {
         if (res.status === 400 && Array.isArray(data.errors)) {
-          setErrors(data.errors);
-          setMessage("Revisa los campos del formulario.");
+          const mapped = {};
+            data.errors.forEach(e => { mapped[e.path || e.param] = e.msg; });
+          setFieldErrors(mapped);
+          setToastMsg("error", "Validación fallida.");
         } else {
-          setMessage(data?.error || `Error (${res.status}).`);
+          setToastMsg("error", data?.error || "Error servidor.");
         }
       } else {
-        setMessage("Solicitud enviada correctamente.");
+        setToastMsg("success", "Solicitud enviada.");
         setForm({ nombre: "", correo: "", descripcion: "" });
+        setFieldErrors({});
       }
-    } catch (err) {
-      setMessage("No se pudo conectar con el servidor.");
-      console.error(err);
+    } catch {
+      setToastMsg("error", "No se pudo conectar.");
     } finally {
       setLoading(false);
     }
   };
 
+  const fade = {
+    hidden: { opacity: 0, y: 25 },
+    visible: { opacity: 1, y: 0, transition: { duration: .55 } }
+  };
+
   return (
     <>
       <Header avatar="/images/Davinson.png" />
-
       <main>
-        {/* Perfil */}
-        <Section id="Perfil" title="Perfil">
-          <Card
-            description="Estudiante de Desarrollo de Software, responsable y organizado, con habilidades en comunicación asertiva, trabajo en equipo y aprendizaje autónomo. Me adapto con facilidad a diferentes contextos y busco aportar al crecimiento organizacional mediante la aplicación de mis conocimientos y competencias."
-          />
-        </Section>
+        <motion.section
+          className="section"
+          id="Perfil"
+          variants={fade}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+        >
+          <Section title="Perfil">
+            <Card
+              description="Estudiante de Desarrollo de Software, responsable y organizado, con habilidades en comunicación asertiva, trabajo en equipo y aprendizaje autónomo. Me adapto con facilidad a diferentes contextos y busco aportar al crecimiento organizacional mediante la aplicación de mis conocimientos y competencias."
+            />
+          </Section>
+        </motion.section>
 
         {/* Idiomas */}
         <Section id="Idiomas" title="Idiomas">
@@ -195,20 +228,20 @@ function App() {
         {/* Solicitud de servicio */}
         <Section id="Solicitud" title="Solicitud de servicio">
           <Card>
-            <form onSubmit={handleSubmit} className="form">
-              <div className="form__group">
+            <form onSubmit={handleSubmit} className="form" noValidate>
+              <div className={`form__group ${fieldErrors.nombre ? "has-error" : ""}`}>
                 <label htmlFor="nombre">Nombre</label>
                 <input
                   id="nombre"
                   name="nombre"
-                  type="text"
                   value={form.nombre}
                   onChange={handleChange}
-                  required
+                  aria-invalid={!!fieldErrors.nombre}
                 />
+                {fieldErrors.nombre && <small className="error-msg">{fieldErrors.nombre}</small>}
               </div>
 
-              <div className="form__group">
+              <div className={`form__group ${fieldErrors.correo ? "has-error" : ""}`}>
                 <label htmlFor="correo">Correo</label>
                 <input
                   id="correo"
@@ -216,11 +249,12 @@ function App() {
                   type="email"
                   value={form.correo}
                   onChange={handleChange}
-                  required
+                  aria-invalid={!!fieldErrors.correo}
                 />
+                {fieldErrors.correo && <small className="error-msg">{fieldErrors.correo}</small>}
               </div>
 
-              <div className="form__group">
+              <div className={`form__group ${fieldErrors.descripcion ? "has-error" : ""}`}>
                 <label htmlFor="descripcion">Descripción</label>
                 <textarea
                   id="descripcion"
@@ -228,25 +262,14 @@ function App() {
                   rows="4"
                   value={form.descripcion}
                   onChange={handleChange}
-                  required
+                  aria-invalid={!!fieldErrors.descripcion}
                 />
+                {fieldErrors.descripcion && <small className="error-msg">{fieldErrors.descripcion}</small>}
               </div>
 
               <button type="submit" disabled={loading}>
-                {loading ? "Enviando..." : "Enviar solicitud"}
+                {loading ? "Enviando..." : "Enviar"}
               </button>
-
-              {message && <p className="form__message">{message}</p>}
-
-              {errors.length > 0 && (
-                <ul className="form__errors">
-                  {errors.map((err, idx) => (
-                    <li key={idx}>
-                      {(err.path || err.param) ?? "campo"}: {err.msg || "inválido"}
-                    </li>
-                  ))}
-                </ul>
-              )}
             </form>
           </Card>
         </Section>
@@ -255,6 +278,13 @@ function App() {
       <footer className="site-footer">
         <small>© 2025 El Cartel De Jimmy</small>
       </footer>
+
+      <Toast
+        type={toast.type}
+        message={toast.message}
+        onClose={() => setToast({ type: null, message: null })}
+      />
+      <BackToTop />
     </>
   );
 }
