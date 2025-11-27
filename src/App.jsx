@@ -8,6 +8,8 @@ const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL ||
   "https://hojadevida-backend.onrender.com";
 
+const SOLICITUDES_ENDPOINT = `${API_BASE_URL}/solicitudes`;
+
 function App() {
   const [form, setForm] = useState({ nombre: "", correo: "", descripcion: "" });
   const [loading, setLoading] = useState(false);
@@ -26,47 +28,33 @@ function App() {
     setErrors([]);
     setLoading(true);
 
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 20000); // Render puede tardar
-
     try {
-      const res = await fetch(`${API_BASE_URL}/api/solicitudes`, {
+      const res = await fetch(SOLICITUDES_ENDPOINT, {
         method: "POST",
-        mode: "cors",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
+        headers: { "Content-Type": "application/json", Accept: "application/json" },
         body: JSON.stringify(form),
-        signal: controller.signal,
       });
 
       const data = await res.json().catch(() => ({}));
 
       if (!res.ok) {
-        console.error("Solicitud POST falló:", res.status, data);
         if (res.status === 400 && Array.isArray(data.errors)) {
           setErrors(data.errors);
           setMessage("Revisa los campos del formulario.");
         } else {
-          setMessage(data?.error || `Error del servidor (${res.status}).`);
+          setMessage(data?.error || `Error (${res.status}).`);
         }
       } else {
         setMessage("Solicitud enviada correctamente.");
         setForm({ nombre: "", correo: "", descripcion: "" });
       }
     } catch (err) {
-      console.error("Error de red/timeout:", err);
-      setMessage(
-        err.name === "AbortError"
-          ? "Tiempo de espera agotado. Intenta de nuevo."
-          : "No se pudo conectar con el servidor."
-      );
+      setMessage("No se pudo conectar con el servidor.");
+      console.error(err);
     } finally {
-      clearTimeout(timeout);
       setLoading(false);
     }
-  }
+  };
 
   return (
     <>
