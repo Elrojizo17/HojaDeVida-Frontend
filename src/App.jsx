@@ -87,28 +87,28 @@ function App() {
             />
 
             <Card
-              image="/images/pythoned.png"
+              image="/images/html.png"
               title="HTML 5"
               description="Estructuración semántica y moderna."
               badge="Diseño responsivo"
             />
 
             <Card
-              image="/images/pythoned.png"
+              image="/images/css.png"
               title="CSS"
               description="Estilos modernos y adaptables."
               badge="UI Moderna"
             />
 
             <Card
-              image="/images/pythoned.png"
+              image="/images/canva.png"
               title="Canva"
               description="Diseño gráfico intuitivo."
               badge="Contenido visual"
             />
 
             <Card
-              image="/images/pythoned.svg"
+              image="/images/postgre.png"
               title="PostgreSQL"
               description="Gestión de bases de datos."
               badge="Diseño y administración"
@@ -121,7 +121,7 @@ function App() {
           <div className="grid grid--cards">
             <Card
               image="/images/univalle.png"
-              title="Monitor Administrativo"
+              title="Auxiliar Administrativo"
               description="Apoyo en procesos administrativos y académicos."
               badge="Gestión"
             />
@@ -134,7 +134,7 @@ function App() {
             />
 
             <Card
-              image="/images/pythoned.png"
+              image="/images/eventos.png"
               title="Eventos"
               description="Coordinación y apoyo en eventos institucionales."
               badge="Organización"
@@ -152,7 +152,7 @@ function App() {
             />
 
             <Card
-              image="/images/pyhtoned.png"
+              image="/images/american.png"
               title="Curso de Inglés"
               description="Certificado nivel B2."
             />
@@ -174,7 +174,7 @@ function App() {
               </a>
 
               <a href="mailto:alejandroescobard85@gmail.com">
-                <img src="/images/gmail.svg" alt="Correo" />
+                <img src="/images/gmail.png" alt="Correo" />
               </a>
 
               <a
