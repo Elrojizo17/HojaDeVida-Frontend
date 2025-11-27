@@ -21,10 +21,14 @@ function App() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (loading) return; // evita doble envío
+    if (loading) return;
     setMessage(null);
     setErrors([]);
     setLoading(true);
+
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 20000); // Render puede tardar
+
     try {
       const res = await fetch(`${API_BASE_URL}/api/solicitudes`, {
         method: "POST",
@@ -34,22 +38,32 @@ function App() {
           Accept: "application/json",
         },
         body: JSON.stringify(form),
+        signal: controller.signal,
       });
+
       const data = await res.json().catch(() => ({}));
+
       if (!res.ok) {
+        console.error("Solicitud POST falló:", res.status, data);
         if (res.status === 400 && Array.isArray(data.errors)) {
           setErrors(data.errors);
           setMessage("Revisa los campos del formulario.");
         } else {
-          setMessage(data?.error || "Error al enviar la solicitud.");
+          setMessage(data?.error || `Error del servidor (${res.status}).`);
         }
       } else {
         setMessage("Solicitud enviada correctamente.");
         setForm({ nombre: "", correo: "", descripcion: "" });
       }
     } catch (err) {
-      setMessage("No se pudo conectar con el servidor.");
+      console.error("Error de red/timeout:", err);
+      setMessage(
+        err.name === "AbortError"
+          ? "Tiempo de espera agotado. Intenta de nuevo."
+          : "No se pudo conectar con el servidor."
+      );
     } finally {
+      clearTimeout(timeout);
       setLoading(false);
     }
   }
