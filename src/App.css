@@ -32,8 +32,31 @@
   --text-2: #5a6b7d;
   --border: rgba(0,0,0,0.14);
   --border-soft: rgba(0,0,0,0.08);
-  --glass: rgba(0,0,0,0.04);
+  --glass: rgba(0,0,0,0.05);
   --glass-alt: rgba(0,0,0,0.08);
+}
+
+/* Aplica fondo según tema al body */
+body.theme-dark {
+  background: radial-gradient(circle at 20% 20%, #181c22, #0d0f12 55%) fixed;
+}
+body.theme-light {
+  background: linear-gradient(180deg, #f5f7fb, #eef1f6) fixed;
+}
+
+.theme-toggle {
+  background: var(--glass);
+  border: 1px solid var(--border-soft);
+  padding: .55rem .9rem;
+  font-size: .75rem;
+  border-radius: 50px;
+  cursor: pointer;
+  color: var(--text-1);
+  transition: var(--trans);
+}
+.theme-toggle:hover {
+  background: var(--glass-alt);
+  color: var(--text-0);
 }
 
 /* ====== Reset & Base ====== */
@@ -411,20 +434,22 @@ button[type="submit"]:disabled {
 /* ====== Toast ====== */
 .toast {
   position: fixed;
-  bottom: 1.4rem;
-  right: 1.4rem;
+  bottom: 2.2rem;
+  right: 2.2rem;
+  max-width: 340px;     /* limita ancho */
   min-width: 220px;
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr auto;
   gap: .65rem;
   align-items: center;
-  padding: .8rem 1rem;
-  font-size: .75rem;
+  padding: .7rem .9rem;
+  font-size: .78rem;     /* más pequeño */
   font-weight: 500;
   border-radius: var(--radius-sm);
   box-shadow: var(--shadow-md);
   backdrop-filter: blur(14px);
   border: 1px solid var(--border);
-  animation: fadeIn .35s ease;
+  animation: fadeIn .25s ease;
   z-index: 60;
 }
 .toast--success { background: rgba(60,190,130,.18); color: #7bffc5; }
@@ -442,25 +467,25 @@ button[type="submit"]:disabled {
 /* ====== Back to Top Button ====== */
 .back-to-top {
   position: fixed;
-  bottom: 1.4rem;
-  left: 1.4rem;
-  width: 46px;
-  height: 46px;
+  bottom: 2.2rem;      /* más separación del borde */
+  left: 2.2rem;        /* no tapa el toast a la derecha */
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
   border: 1px solid var(--border);
   background: var(--glass);
   backdrop-filter: blur(14px);
   color: var(--text-1);
   cursor: pointer;
-  font-size: 1.1rem;
+  font-size: 1rem;
   transition: var(--trans);
   box-shadow: var(--shadow-sm);
-  z-index: 55;
+  z-index: 50;         /* por debajo del toast */
 }
 .back-to-top:hover {
-  background: var(--accent-grad);
-  color: #101113;
-  transform: translateY(-4px);
+  background: var(--glass-alt);
+  color: var(--text-0);
+  transform: translateY(-3px);
 }
 
 @keyframes fadeIn {

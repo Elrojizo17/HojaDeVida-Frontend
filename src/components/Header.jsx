@@ -7,7 +7,9 @@ export default function Header({ avatar }) {
     );
 
     useEffect(() => {
-        document.documentElement.dataset.theme = theme;
+        document.documentElement.dataset.theme = theme; // afecta :root[data-theme]
+        document.body.classList.toggle("theme-light", theme === "light");
+        document.body.classList.toggle("theme-dark", theme === "dark");
         localStorage.setItem("theme", theme);
     }, [theme]);
 
@@ -19,8 +21,9 @@ export default function Header({ avatar }) {
         </div>
         <button
             className="theme-toggle"
-            onClick={() => setTheme((t) => (t === "dark" ? "light" : "dark"))}
+            onClick={() => setTheme(t => (t === "dark" ? "light" : "dark"))}
             aria-label="Cambiar tema"
+            title="Cambiar tema"
         >
             {theme === "dark" ? "☀️ Claro" : "🌙 Oscuro"}
         </button>
